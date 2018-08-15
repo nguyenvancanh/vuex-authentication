@@ -168,3 +168,236 @@ Tương tự như 2 component ở trên, tạo component **Secure.vue** với n�
 ```
 
 **Update The App Component**
+
+Mở file _./src/App.vue_ và cập nhật lại với đoạn code sau:
+
+```
+<template>
+  <div id="app">
+    <div id="nav">
+      <router-link to="/">Home</router-link> |
+      <router-link to="/about">About</router-link><span v-if="isLoggedIn"> | <a @click="logout">Logout</a></span>
+    </div>
+    <router-view/>
+  </div>
+</template>
+<script>
+  export default {
+    computed : {
+      isLoggedIn : function(){ return this.$store.getters.isLoggedIn}
+    },
+    methods: {
+      logout: function () {
+        this.$store.dispatch('logout')
+        .then(() => {
+          this.$router.push('/login')
+        })
+      }
+    },
+    created: function () {
+      this.$http.interceptors.response.use(undefined, function (err) {
+        return new Promise(function (resolve, reject) {
+          if (err.status === 401 && err.config && !err.config.__isRetryRequest) {
+            this.$store.dispatch(logout)
+          }
+          throw err;
+        });
+      });
+    }
+  }
+</script>
+
+<style>
+#app {
+  font-family: 'Avenir', Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-align: center;
+  color: #2c3e50;
+}
+#nav {
+  padding: 30px;
+}
+
+#nav a {
+  font-weight: bold;
+  color: #2c3e50;
+  cursor: pointer;
+}
+
+#nav a:hover {
+  text-decoration: underline;
+}
+
+#nav a.router-link-exact-active {
+  color: #42b983;
+}
+</style>
+```
+
+- Hãy nhìn lại một chút, ở methods **logout**. Ở function này chúng ta đang thực hiện 2 thao tác đó là kiểm tra trạng thái đăng nhập của người dùng và gửi một hành động đăng xuất tới vuex store khi người dùng click vào link đăng xuất phía trên giao diện. Sau khi đăng xuất khỏi hệ thống, chúng ta sẽ chuyển giao diện của người dùng tới màn hình login bằng phương thức 
+**this.$router.push('/login')**. Bạn có thể thay đổi điều này nếu bạn muốn.
+
+**Vuex Auth Module**
+
+Trước tiên, chúng ta hãy setup file store.js cho vuex. 
+
+```
+import Vue from 'vue'
+import Vuex from 'vuex'
+import axios from 'axios'
+
+Vue.use(Vuex)
+
+export default new Vuex.Store({
+  state: {
+    status: '',
+    token: localStorage.getItem('token') || '',
+    user : {}
+  },
+  mutations: {
+
+  },
+  actions: {
+
+  },
+  getters : {
+
+  }
+})
+```
+
+Ở đây, chúng ta import vue, vuex, axios. sau dó khai báo cho Vue có thể dùng được Vuex. Tiếp theo, chúng ta sẽ tạo phương thức Vuex login. Phương thức năng có nhiệm vụ chính đó là commit các mutation tới vuex store. Chúng ta sẽ thực hiện hành động đăng nhập để xác thực thông tin người dùng với máy chủ và cam kết thông tin người dùng tới vuex store. Thêm function sau vào file _src/store.js_
+
+```
+login({commit}, user){
+    return new Promise((resolve, reject) => {
+      commit('auth_request')
+      axios({url: 'http://localhost:3000/login', data: user, method: 'POST' })
+      .then(resp => {
+        const token = resp.data.token
+        const user = resp.data.user
+        localStorage.setItem('token', token)
+        axios.defaults.headers.common['Authorization'] = token
+        commit('auth_success', token, user)
+        resolve(resp)
+      })
+      .catch(err => {
+        commit('auth_error')
+        localStorage.removeItem('token')
+        reject(err)
+      })
+    })
+},
+```
+
+Tiếp đến là function register, 
+
+```
+register({commit}, user){
+  return new Promise((resolve, reject) => {
+    commit('auth_request')
+    axios({url: 'http://localhost:3000/register', data: user, method: 'POST' })
+    .then(resp => {
+      const token = resp.data.token
+      const user = resp.data.user
+      localStorage.setItem('token', token)
+      axios.defaults.headers.common['Authorization'] = token
+      commit('auth_success', token, user)
+      resolve(resp)
+    })
+    .catch(err => {
+      commit('auth_error', err)
+      localStorage.removeItem('token')
+      reject(err)
+    })
+  })
+},
+```
+và function logout,
+
+```
+logout({commit}){
+  return new Promise((resolve, reject) => {
+    commit('logout')
+    localStorage.removeItem('token')
+    delete axios.defaults.headers.common['Authorization']
+    resolve()
+  })
+}
+```
+
+**Routes For Authenticated**
+Mở file _./src/router.js_ và thêm đoạn code sau:
+
+```
+import Vue from 'vue'
+import Router from 'vue-router'
+import store from './store.js'
+import Home from './views/Home.vue'
+import About from './views/About.vue'
+import Login from './components/Login.vue'
+import Secure from './components/Secure.vue'
+import Register from './components/Register.vue'
+
+Vue.use(Router)
+
+```
+
+Để định nghĩa được các route cần thiết thì dùng code sau:
+
+```
+let router = new Router({
+  mode: 'history',
+  routes: [
+    {
+      path: '/',
+      name: 'home',
+      component: Home
+    },
+    {
+      path: '/login',
+      name: 'login',
+      component: Login
+    },
+    {
+      path: '/register',
+      name: 'register',
+      component: Register
+    },
+    {
+      path: '/secure',
+      name: 'secure',
+      component: Secure,
+      meta: { 
+        requiresAuth: true
+      }
+    },
+    {
+      path: '/about',
+      name: 'about',
+      component: About
+    }
+  ]
+})
+
+export default router
+```
+
+**Handling Unauthorized Access Cases**
+Thêm đoạn code sau vào trước câu lệnh exprot để kiểm tra quyền truy cập trái phép và kiếm tra hoạt động được phép thực hiện của user đố
+
+```
+router.beforeEach((to, from, next) => {
+  if(to.matched.some(record => record.meta.requiresAuth)) {
+    if (store.getters.isLoggedIn) {
+      next()
+      return
+    }
+    next('/login') 
+  } else {
+    next() 
+  }
+})
+
+```
