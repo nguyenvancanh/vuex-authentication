@@ -1,25 +1,3 @@
 # Vuex Authentication
 
-> A simple example of authentication and access control in a [Vue](https://vuejs.org/) app with [Vuex](https://vuex.vuejs.org/).
-
-## Build Setup
-
-``` bash
-# install dependencies
-npm install
-
-# serve with hot reload at localhost:8080
-npm run serve
-
-# build for production with minification
-npm run build
-```
-
-## Server Setup
-To understand how to set up an authentication server, you can read [this article](https://scotch.io/tutorials/vue-authentication-and-route-handling-using-vue-router)
-
-## Built with
-- [Vue](https://vuejs.org/) - A progressive JavaScript framework
-- [Vue-router](https://router.vuejs.org/) - The official router for Vue.js
-- [Vuex](https://vuex.vuejs.org/) - The state manager for Vue.js
-- [Axios](https://github.com/axios/axios) - Promise based HTTP client for the browser and node.js
+Vuex là gì? Bạn có thể hiểu một cách nôm na là Vuex được xây dựng dựa trên ý tưởng của Flux, Redux và kiến trúc Elm, tuy nhiên nó không được tích hợp vào trong core của vuejs mà nó được phát triển thành một package riêng. Vuex sinh ra giúp chúng ta quản lý các components trong project một cách đơn giản và hiệu quả. Nếu bạn không xây dựng một ứng dụng đơn trang và có lượng dữ liệu lớn thì không cần thiết sử dụng đến nó. Nhưng khi bạn làm việc với dữ liệu lớn thì Vuex sẽ là một giải pháp hữu ích cho bạn. Một bài viết về Vuex tương đối cụ thể và dễ  hiểu. Bạn có thể tham khảo tại đây](https://techblog.vn/tai-sao-dung-vuex). 
