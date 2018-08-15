@@ -401,3 +401,24 @@ router.beforeEach((to, from, next) => {
 })
 
 ```
+
+**Handling Expired Token Cases**
+Để  có thể kiểm tra được token expired hay không, sử dụng đoạn code sau trong file _src/App.vue_ 
+
+```
+export default {
+  [...]
+  created: function () {
+    this.$http.interceptors.response.use(undefined, function (err) {
+      return new Promise(function (resolve, reject) {
+        if (err.status === 401 && err.config && !err.config.__isRetryRequest) {
+          this.$store.dispatch(logout)
+        }
+        throw err;
+      });
+    });
+  }
+}
+```
+
+Trên đây chỉ là một ví dụ nhỏ về cách sử dụng Vuex, hãy tìm hiểu thêm và hiểu rõ hơn về Vuex để có thể áp dụng vào dự án của b
