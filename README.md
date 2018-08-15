@@ -421,4 +421,4 @@ export default {
 }
 ```
 
-Trên đây chỉ là một ví dụ nhỏ về cách sử dụng Vuex, hãy tìm hiểu thêm và hiểu rõ hơn về Vuex để có thể áp dụng vào dự án của b
+Trên đây chỉ là một ví dụ nhỏ về cách sử dụng Vuex, hãy tìm hiểu thêm và hiểu rõ hơn về Vuex để có thể áp dụng vào dự án của bạn nhé. Chúc các bạn thành công. ^^
